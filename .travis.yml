@@ -20,4 +20,4 @@ after_script:
   - php vendor/bin/ocular code-coverage:upload --format=php-clover coverage.clover
 
 before_install:
-  - pecl install imagick
+  - printf "\n" | pecl install imagick
