@@ -89,7 +89,9 @@ class Generate extends Command
     protected function ascii(string $bits, int $size): string
     {
         return implode("\n", array_map(
-            fn($str) => preg_replace('/(1+)/', '<fg=green>$1</>', $str),
+            function ($str) {
+                return preg_replace('/(1+)/', '<fg=green>$1</>', $str);
+            },
             str_split($bits, $size)
         ));
     }
