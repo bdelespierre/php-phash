@@ -1,0 +1,42 @@
+{
+    "name": "bdelespierre/php-phash",
+    "description": "pHash implementation in PHP",
+    "keywords": [
+        "bdelespierre",
+        "phash",
+        "image hashing algorithm"
+    ],
+    "homepage": "https://github.com/bdelespierre/php-phash",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Benjamin Delespierre",
+            "email": "benjamin.delespierre@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "bin": [
+        "bin/phash"
+    ],
+    "require": {
+        "php": "~7.2",
+        "ext-imagick": "*",
+        "intervention/image": "^2.5",
+        "symfony/console": "^5.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Bdelespierre\\PhpPhash\\": "src/",
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+
+    }
+}
