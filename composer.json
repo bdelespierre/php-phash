@@ -21,9 +21,12 @@
     ],
     "require": {
         "php": "~7.3",
-        "ext-imagick": "*",
         "intervention/image": "^2.5",
         "symfony/console": "^5.1"
+    },
+    "suggest": {
+        "ext-gd": "to use GD library based image processing.",
+        "ext-imagick": "to use Imagick based image processing."
     },
     "require-dev": {
         "phpunit/phpunit": "^9.3"
