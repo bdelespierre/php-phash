@@ -5,7 +5,7 @@
 [![Quality Score](https://img.shields.io/scrutinizer/g/bdelespierre/php-phash.svg?style=flat-square)](https://scrutinizer-ci.com/g/bdelespierre/php-phash)
 [![Total Downloads](https://img.shields.io/packagist/dt/bdelespierre/php-phash.svg?style=flat-square)](https://packagist.org/packages/bdelespierre/php-phash)
 
-Performs syntax-checks of your Blade templates. Just that.
+Computes the pHash ([Perceptive Hash](http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html)) of an image to compare images.
 
 ## Installation
 
