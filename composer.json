@@ -20,7 +20,7 @@
         "bin/phash"
     ],
     "require": {
-        "php": "~7.2",
+        "php": "~7.3",
         "ext-imagick": "*",
         "intervention/image": "^2.5",
         "symfony/console": "^5.1"
