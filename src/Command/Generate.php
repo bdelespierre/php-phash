@@ -2,6 +2,7 @@
 
 namespace Bdelespierre\PhpPhash\Command;
 
+use Bdelespierre\PhpPhash\Command\ValidatesSamplingSize;
 use Bdelespierre\PhpPhash\PHash;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -11,6 +12,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Generate extends Command
 {
+    use ValidatesSamplingSize;
+
     protected $phash;
 
     public function __construct(PHash $phash)
@@ -31,68 +34,62 @@ class Generate extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $file = $input->getArgument('file');
-        $size = $input->getOption('size');
-
-        if (! is_readable($file)) {
-            $output->writeln("<error>File {$file} not found or unreadable</error>");
-
+        try {
+            $this->validate($input);
+        } catch (\InvalidArgumentException $e) {
+            $output->writeln("<error>{$e->getMessage()}</error>");
             return Command::FAILURE;
         }
 
-        if ($size < 8) {
-            $output->writeln("<error>Sampling size must be greater or equal to 8</error>");
-
-            return Command::FAILURE;
-        }
-
-        if ($size ** 2 > PHP_INT_SIZE * 8 && ! function_exists('gmp_init')) {
-            $output->writeln("<error>Sampling size too large: reduce it or install PHP-GMP extension</error>");
-
-            return Command::FAILURE;
-        }
-
-        if (! in_array($input->getOption('format'), ['hex', 'bin', 'ascii'])) {
-            $output->writeln("<error>Invalid format</error>");
-
-            return Command::FAILURE;
-        }
-
-        $bits = $this->phash->hash(new \SplFileInfo($file), $size);
-
-        $output->writeln($this->format(
-            $bits,
-            $input->getOption('format'),
+        $bits = $this->phash->hash(
+            new \SplFileInfo($input->getArgument('file')),
             $input->getOption('size')
-        ));
+        );
+
+        $this->display($output, $input->getOption('format'), $bits, $input->getOption('size'));
 
         return Command::SUCCESS;
     }
 
-    protected function format(string $bits, string $format, int $size): string
+    protected function validate(InputInterface $input)
+    {
+        if (! is_readable($input->getArgument('file'))) {
+            throw new \InvalidArgumentException("File {$input->getArgument('file')} not found or unreadable");
+        }
+
+        $this->validateSamplingSize($input->getOption('size'));
+
+        if (! in_array($input->getOption('format'), ['hex', 'bin', 'ascii'])) {
+            throw new \InvalidArgumentException("Invalid format");
+        }
+    }
+
+    protected function display(OutputInterface $output, string $format, string $bits, int $size)
     {
         switch ($format) {
             default:
             case 'bin':
-                return $bits;
+                $output->writeln($bits);
+                break;
 
             case 'hex':
-                return strlen($bits) <= (PHP_INT_SIZE * 8)
-                    ? base_convert($bits, 2, 16)
-                    : gmp_strval(gmp_init($bits, 2), 16);
+                $output->writeln(
+                    strlen($bits) <= (PHP_INT_SIZE * 8)
+                        ? base_convert($bits, 2, 16)
+                        : gmp_strval(gmp_init($bits, 2), 16)
+                );
+                break;
 
             case 'ascii':
-                return $this->ascii($bits, $size);
+                $output->writeln(
+                    implode("\n", array_map(
+                        function ($str) {
+                            return preg_replace('/(1+)/', '<fg=green>$1</>', $str);
+                        },
+                        str_split($bits, $size)
+                    ))
+                );
+                break;
         }
-    }
-
-    protected function ascii(string $bits, int $size): string
-    {
-        return implode("\n", array_map(
-            function ($str) {
-                return preg_replace('/(1+)/', '<fg=green>$1</>', $str);
-            },
-            str_split($bits, $size)
-        ));
     }
 }

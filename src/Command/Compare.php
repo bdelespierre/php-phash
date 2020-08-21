@@ -2,6 +2,7 @@
 
 namespace Bdelespierre\PhpPhash\Command;
 
+use Bdelespierre\PhpPhash\Command\ValidatesSamplingSize;
 use Bdelespierre\PhpPhash\PHash;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -11,6 +12,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Compare extends Command
 {
+    use ValidatesSamplingSize;
+
     protected $phash;
 
     public function __construct(PHash $phash)
@@ -32,69 +35,68 @@ class Compare extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $file1 = $input->getArgument('file1');
-        $file2 = $input->getArgument('file2');
+        try {
+            $this->validate($input);
+        } catch (\InvalidArgumentException $e) {
+            $output->writeln("<error>{$e->getMessage()}</error>");
+            return Command::FAILURE;
+        }
+
         $size  = $input->getOption('size');
+        $hash1 = $this->phash->hash(new \SplFileInfo($input->getArgument('file1')), $size);
+        $hash2 = $this->phash->hash(new \SplFileInfo($input->getArgument('file2')), $size);
+        $dist  = $this->getHammingDistance($hash1, $hash2);
+        $sim   = 1 - $dist / ($size ** 2);
 
-        if (! is_readable($file1)) {
-            $output->writeln("<error>File {$file1} not found or unreadable</error>");
+        $this->display($output, $input->getOption('format'), $dist, $sim);
+        return Command::SUCCESS;
+    }
 
-            return Command::FAILURE;
-        }
-
-        if (! is_readable($file2)) {
-            $output->writeln("<error>File {$file2} not found or unreadable</error>");
-
-            return Command::FAILURE;
-        }
-
-        if ($size < 8) {
-            $output->writeln("<error>Sampling size must be greater or equal to 8</error>");
-
-            return Command::FAILURE;
-        }
-
-        if ($size ** 2 > PHP_INT_SIZE * 8 && ! function_exists('gmp_init')) {
-            $output->writeln("<error>Sampling size too large: reduce it or install PHP-GMP extension</error>");
-
-            return Command::FAILURE;
-        }
-
-        if (! in_array($input->getOption('format'), ['percent', 'ratio', 'float', 'integer', 'int'])) {
-            $output->writeln("<error>Invalid format</error>");
-
-            return Command::FAILURE;
-        }
-
-        $hash1 = $this->phash->hash(new \SplFileInfo($file1), $size);
-        $hash2 = $this->phash->hash(new \SplFileInfo($file2), $size);
-
-        $diff = 0;
-        for ($i = 0; $i < $size ** 2; $i++) {
-            if ($hash1[$i] != $hash2[$i]) {
-                $diff++;
+    protected function validate(InputInterface $input)
+    {
+        foreach (['file1', 'file2'] as $arg) {
+            if (! is_readable($input->getArgument($arg))) {
+                throw new \InvalidArgumentException("File {$input->getArgument($arg)} not found or unreadable");
             }
         }
 
-        $sim = 1 - $diff / ($size ** 2);
+        $this->validateSamplingSize($input->getOption('size'));
 
-        switch ($input->getOption('format')) {
+        if (! in_array($input->getOption('format'), ['percent', 'ratio', 'float', 'integer', 'int'])) {
+            throw new \InvalidArgumentException("Invalid format");
+        }
+    }
+
+    protected function getHammingDistance(string $hash1, string $hash2): int
+    {
+        $size = strlen($hash1);
+
+        for ($dist = 0, $i = 0; $i < $size; $i++) {
+            if ($hash1[$i] != $hash2[$i]) {
+                $dist++;
+            }
+        }
+
+        return $dist;
+    }
+
+    protected function display(OutputInterface $output, string $format, int $distance, float $similarity)
+    {
+        switch ($format) {
             default:
             case 'percent':
-                $output->writeln(round($sim * 100) . '%');
+                $output->writeln(round($similarity * 100) . '%');
                 break;
 
             case 'ratio':
             case 'float':
-                $output->writeln($sim);
+                $output->writeln($similarity);
                 break;
 
             case 'integer':
             case 'int':
-                $output->writeln($diff);
+                $output->writeln($distance);
                 break;
         }
-
-        return Command::SUCCESS;
     }
 }
