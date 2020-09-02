@@ -15,7 +15,7 @@ trait CreatesApplication
         $application = new Application();
 
         $manager = new ImageManager(['driver' => 'imagick']);
-        $phash   = new PHash($manager);
+        $phash = new PHash($manager);
 
         $application->add(new Generate($phash));
         $application->add(new Compare($phash));

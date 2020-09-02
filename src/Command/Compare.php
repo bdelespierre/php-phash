@@ -2,7 +2,6 @@
 
 namespace Bdelespierre\PhpPhash\Command;
 
-use Bdelespierre\PhpPhash\Command\ValidatesSamplingSize;
 use Bdelespierre\PhpPhash\PHash;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -39,31 +38,33 @@ class Compare extends Command
             $this->validate($input);
         } catch (\InvalidArgumentException $e) {
             $output->writeln("<error>{$e->getMessage()}</error>");
+
             return Command::FAILURE;
         }
 
-        $size  = $input->getOption('size');
+        $size = $input->getOption('size');
         $hash1 = $this->phash->hash(new \SplFileInfo($input->getArgument('file1')), $size);
         $hash2 = $this->phash->hash(new \SplFileInfo($input->getArgument('file2')), $size);
-        $dist  = $this->getHammingDistance($hash1, $hash2);
-        $sim   = 1 - $dist / ($size ** 2);
+        $dist = $this->getHammingDistance($hash1, $hash2);
+        $sim = 1 - $dist / ($size ** 2);
 
         $this->display($output, $input->getOption('format'), $dist, $sim);
+
         return Command::SUCCESS;
     }
 
     protected function validate(InputInterface $input)
     {
         foreach (['file1', 'file2'] as $arg) {
-            if (! is_readable($input->getArgument($arg))) {
+            if (!is_readable($input->getArgument($arg))) {
                 throw new \InvalidArgumentException("File {$input->getArgument($arg)} not found or unreadable");
             }
         }
 
         $this->validateSamplingSize($input->getOption('size'));
 
-        if (! in_array($input->getOption('format'), ['percent', 'ratio', 'float', 'integer', 'int'])) {
-            throw new \InvalidArgumentException("Invalid format");
+        if (!in_array($input->getOption('format'), ['percent', 'ratio', 'float', 'integer', 'int'])) {
+            throw new \InvalidArgumentException('Invalid format');
         }
     }
 
@@ -71,9 +72,9 @@ class Compare extends Command
     {
         $size = strlen($hash1);
 
-        for ($dist = 0, $i = 0; $i < $size; $i++) {
+        for ($dist = 0, $i = 0; $i < $size; ++$i) {
             if ($hash1[$i] != $hash2[$i]) {
-                $dist++;
+                ++$dist;
             }
         }
 
@@ -85,7 +86,7 @@ class Compare extends Command
         switch ($format) {
             default:
             case 'percent':
-                $output->writeln(round($similarity * 100) . '%');
+                $output->writeln(round($similarity * 100).'%');
                 break;
 
             case 'ratio':

@@ -5,8 +5,6 @@ namespace Tests\Command;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
-use Tests\Command\CreatesApplication;
-use Tests\PHashTest;
 
 class GenerateCommandTest extends TestCase
 {
@@ -33,28 +31,27 @@ class GenerateCommandTest extends TestCase
         return [
             'red dress 1.1' => [
                 'arguments' => [
-                    'file' => __DIR__ . "/../images/NKIE-WD294_V1.jpg",
+                    'file' => __DIR__.'/../images/NKIE-WD294_V1.jpg',
                     '--size' => 8,
-                    '--format' => "hex",
+                    '--format' => 'hex',
                 ],
-                'hash' => "ffffef0001900000",
+                'hash' => 'ffffef0001900000',
             ],
             'red dress 1.2' => [
                 'arguments' => [
-                    'file' => __DIR__ . "/../images/NKIE-WD294_V2.jpg",
+                    'file' => __DIR__.'/../images/NKIE-WD294_V2.jpg',
                     '--size' => 16,
-                    '--format' => "bin",
+                    '--format' => 'bin',
                 ],
-                'hash' => "1111111111111111111111111111111111111111111111111111111111111111111111111111111111100000111111111000000000000011000000000000000000000000000000001000000000000111111111111101111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
+                'hash' => '1111111111111111111111111111111111111111111111111111111111111111111111111111111111100000111111111000000000000011000000000000000000000000000000001000000000000111111111111101111111111111111111111111111111111111111111111111111111111111111111111111111111111111',
             ],
             'red dress 1.3' => [
                 'arguments' => [
-                    'file' => __DIR__ . "/../images/NKIE-WD294_V3.jpg",
+                    'file' => __DIR__.'/../images/NKIE-WD294_V3.jpg',
                     '--size' => 32,
-                    '--format' => "ascii",
+                    '--format' => 'ascii',
                 ],
-                'hash' =>
-                    "11111111111111111111111111111111\n".
+                'hash' => "11111111111111111111111111111111\n".
                     "11111111111111111111111111111111\n".
                     "11111111111111111111111111111111\n".
                     "11111111111111111111111111111111\n".
@@ -85,7 +82,7 @@ class GenerateCommandTest extends TestCase
                     "11111111111111111111111111111111\n".
                     "11111111111111111111111111111111\n".
                     "11111111111111111111111111111111\n".
-                    "11111111111111111111111111111111",
+                    '11111111111111111111111111111111',
             ],
         ];
     }
@@ -113,25 +110,25 @@ class GenerateCommandTest extends TestCase
         return [
             'fails when given an invalid file' => [
                 'arguments' => [
-                    'file' => "INVALID",
+                    'file' => 'INVALID',
                 ],
-                'reason' => "File INVALID not found or unreadable",
+                'reason' => 'File INVALID not found or unreadable',
             ],
 
             'fails when given a size smaller than 8' => [
                 'arguments' => [
-                    'file' => realpath(__DIR__ . '/../images/NKIE-WD294_V1.jpg'),
+                    'file' => realpath(__DIR__.'/../images/NKIE-WD294_V1.jpg'),
                     '--size' => 4,
                 ],
-                'reason' => "Sampling size must be greater or equal to 8",
+                'reason' => 'Sampling size must be greater or equal to 8',
             ],
 
             'fails when given an invalid format' => [
                 'arguments' => [
-                    'file' => realpath(__DIR__ . '/../images/NKIE-WD294_V1.jpg'),
-                    '--format' => "INVALID",
+                    'file' => realpath(__DIR__.'/../images/NKIE-WD294_V1.jpg'),
+                    '--format' => 'INVALID',
                 ],
-                'reason' => "Invalid format",
+                'reason' => 'Invalid format',
             ],
         ];
     }
