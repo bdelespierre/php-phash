@@ -2,7 +2,6 @@
 
 namespace Bdelespierre\PhpPhash\Command;
 
-use Bdelespierre\PhpPhash\Command\ValidatesSamplingSize;
 use Bdelespierre\PhpPhash\PHash;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -38,6 +37,7 @@ class Generate extends Command
             $this->validate($input);
         } catch (\InvalidArgumentException $e) {
             $output->writeln("<error>{$e->getMessage()}</error>");
+
             return Command::FAILURE;
         }
 
@@ -53,14 +53,14 @@ class Generate extends Command
 
     protected function validate(InputInterface $input)
     {
-        if (! is_readable($input->getArgument('file'))) {
+        if (!is_readable($input->getArgument('file'))) {
             throw new \InvalidArgumentException("File {$input->getArgument('file')} not found or unreadable");
         }
 
         $this->validateSamplingSize($input->getOption('size'));
 
-        if (! in_array($input->getOption('format'), ['hex', 'bin', 'ascii'])) {
-            throw new \InvalidArgumentException("Invalid format");
+        if (!in_array($input->getOption('format'), ['hex', 'bin', 'ascii'])) {
+            throw new \InvalidArgumentException('Invalid format');
         }
     }
 
